@@ -13,7 +13,14 @@ const schema = new Schema(
     gstNumber: {
       type: String,
       required: true,
+      unique: true,
     },
+    clients: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Client",
+      },
+    ],
   },
   {
     versionKey: false,

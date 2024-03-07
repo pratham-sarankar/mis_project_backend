@@ -1,6 +1,5 @@
 import mongoose from "../config/database.js";
 import { Schema } from "mongoose";
-import Company from "./company.js";
 
 const schema = new Schema(
   {
@@ -12,7 +11,6 @@ const schema = new Schema(
     company: {
       type: Schema.Types.ObjectId,
       ref: "Company",
-      required: true,
     },
   },
   {
