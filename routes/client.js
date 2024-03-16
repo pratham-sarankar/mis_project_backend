@@ -7,6 +7,7 @@ import ClientController from "../controllers/client_controller.js";
 const router = express.Router();
 
 /* GET users listing. */
+router.get("/me", AuthMiddleware.validateToken, ClientController.me);
 router.post("/", AuthMiddleware.validateToken, ClientController.create);
 router.put("/:id", AuthMiddleware.validateToken, ClientController.update);
 router.delete("/:id", AuthMiddleware.validateToken, ClientController.delete);

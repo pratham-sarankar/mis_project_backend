@@ -10,6 +10,7 @@ import indexRouter from "./routes/index.js";
 import usersRouter from "./routes/user.js";
 import companyRouter from "./routes/company.js";
 import clientRouter from "./routes/client.js";
+import consignmentRouter from "./routes/consignment.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -26,6 +27,7 @@ app.use("/", indexRouter);
 app.use("/user", usersRouter);
 app.use("/company", companyRouter);
 app.use("/client", clientRouter);
+app.use("/consignment", consignmentRouter);
 
 //Add error handler and 404 handler
 app.use((req, res, next) => {
@@ -33,7 +35,7 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error(err);
   res.status(500).json({ message: "Internal Server Error" });
 });
 

@@ -11,10 +11,10 @@ export default class AuthMiddleware {
     token = token.split(" ")[1];
     try {
       const verified = TokenService.verifyToken(token);
-      console.log(verified);
       req.headers.userId = verified.id;
       next();
     } catch (error) {
+      console.log(error);
       return res.status(400).json({
         message: "Invalid Token",
       });
