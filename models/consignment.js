@@ -15,6 +15,14 @@ const schema = new Schema(
       type: Date,
       required: true,
     },
+    deliveryDate: {
+      type: Date,
+      required: true,
+    },
+    deliveryStatus: {
+      type: String,
+      required: true,
+    },
     destination: {
       type: String,
       required: true,
@@ -25,14 +33,6 @@ const schema = new Schema(
     },
     driverMobileNo: {
       type: String,
-      required: true,
-    },
-    deliveryStatus: {
-      type: String,
-      required: true,
-    },
-    deliveryDate: {
-      type: Date,
       required: true,
     },
     detention: {
@@ -64,3 +64,6 @@ schema.set("toJSON", {
 });
 
 export default mongoose.model("Consignment", schema);
+
+//Admission Date: 2/7/2023
+//Result Date:

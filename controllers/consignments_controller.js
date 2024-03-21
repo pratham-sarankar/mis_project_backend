@@ -5,13 +5,31 @@ import Company from "../models/company.js";
 import CounterController from "./counter_controller.js";
 
 export default class ConsignmentController {
+  static async fetchByClient(req, res, next) {
+    try {
+      const id = req.params.id;
+      const consignments = await Consignment.find({ client: id })
+        .populate({
+          path: "ledger",
+          populate: { path: "profitAndLoss" },
+        })
+        .exec();
+      return res.status(200).json({
+        message: "Consignments fetched successfully",
+        consignments,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
   static async create(req, res, next) {
     try {
       //Required parameters in params: clientId
       const client = req.params.id;
       //Required Parameters in body are :-
       //For Consignment - lrNo, dispatchDate, destination, vehicleNo, driverMobileNo, deliveryStatus, deliveryDate
-      //For Ledget - totalFreight, advance
+      //For Ledger - totalFreight, advance
+      //For ProfitAndLoss - freightOffered.
       const {
         lrNo,
         dispatchDate,
@@ -22,6 +40,7 @@ export default class ConsignmentController {
         deliveryDate,
         totalFreight,
         advance,
+        freightOffered,
       } = req.body;
       if (
         !lrNo ||
@@ -32,11 +51,12 @@ export default class ConsignmentController {
         !deliveryStatus ||
         !deliveryDate ||
         !totalFreight ||
-        !advance
+        !advance ||
+        !freightOffered
       ) {
         return res.status(400).json({
           message:
-            "lrNo, dispatchDate, destination, vehicleNo, driverMobileNo, deliveryStatus, deliveryDate, totalFreight and advance are required parameters",
+            "lrNo, dispatchDate, destination, vehicleNo, driverMobileNo, deliveryStatus, deliveryDate, totalFreight, advance and freightOffered are required parameters",
         });
       }
       //Get userId from parameter and fetch user.

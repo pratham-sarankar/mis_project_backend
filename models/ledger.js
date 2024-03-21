@@ -14,6 +14,10 @@ const schema = new Schema(
       type: Number,
       required: true,
     },
+    profitAndLoss: {
+      type: Schema.Types.ObjectId,
+      ref: "ProfitAndLoss",
+    },
   },
   {
     versionKey: false,

@@ -1,11 +1,18 @@
 import mongoose, { Schema } from "mongoose";
-import Company from "./company.js";
-import Consignment from "./consignment.js";
 
 const schema = new Schema(
   {
-    name: {
-      type: String,
+    expenses: {
+      type: Number,
+      default: 0,
+    },
+    freightOffered: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    profit: {
+      type: Number,
       required: true,
     },
   },
@@ -21,4 +28,4 @@ schema.set("toJSON", {
   },
 });
 
-export default mongoose.model("Client", schema);
+export default mongoose.model("ProfitAndLoss", schema);

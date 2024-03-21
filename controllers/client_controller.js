@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import Client from "../models/client.js";
 import Company from "../models/company.js";
+import Consignment from "../models/consignment.js";
 export default class ClientController {
   static async me(req, res, next) {
     try {
@@ -26,6 +27,7 @@ export default class ClientController {
     try {
       const userId = req.headers.userId;
       const { name } = req.body;
+      console.log(req.body);
       if (!name) {
         return res
           .status(400)
@@ -116,7 +118,7 @@ export default class ClientController {
     }
   }
 
-  static async delete(req, res) {
+  static async delete(req, res, next) {
     try {
       //Required parameters
       const { id } = req.params;
@@ -126,7 +128,12 @@ export default class ClientController {
 
       //Find user from req.headers.userId
       const userId = req.headers.userId;
-      const user = await User.findById(userId).populate("company").exec();
+      const user = await User.findById(userId)
+        .populate({
+          path: "company",
+          populate: { path: "clients" },
+        })
+        .exec();
       if (!user) {
         return res.status(404).json({ message: "User not found." });
       }
@@ -149,12 +156,36 @@ export default class ClientController {
           .status(404)
           .json({ message: "Client does not belong to the your company." });
       }
-      //Delete client
-      await Client.deleteOne({ _id: id });
 
       //Remove client from company
-      company.clients.pull(id);
+      company.clients = company.clients.filter((clientId) => {
+        return clientId.toString() !== id;
+      });
       await company.save();
+
+      //Remove all consignments associated with the client
+      const consignments = await Consignment.find({ client: id })
+        .populate({
+          path: "ledger",
+          populate: { path: "profitAndLoss" },
+        })
+        .exec();
+      //For each consignment remove the ledger and for each ledger remove the profit and loss
+      for (let i = 0; i < consignments.length; i++) {
+        const consignment = consignments[i];
+        const ledger = await consignment.ledger;
+        if (ledger) {
+          const profitAndLoss = await ledger.profitAndLoss;
+          if (profitAndLoss) {
+            await profitAndLoss.deleteOne();
+          }
+          await ledger.deleteOne();
+        }
+        await consignment.deleteOne();
+      }
+
+      //Delete client
+      await Client.deleteOne({ _id: id });
 
       return res.status(200).json({ message: "Client deleted successfully" });
     } catch (err) {
