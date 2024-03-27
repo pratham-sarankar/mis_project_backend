@@ -20,4 +20,16 @@ router.post(
   ProfitAndLossController.create,
 );
 
+router.put(
+  "/:id/expenses",
+  AuthMiddleware.validateToken,
+  ConsignmentController.updateExpenses,
+);
+
+router.put(
+  "/:id/delivery-status",
+  AuthMiddleware.validateToken,
+  ConsignmentController.updateDeliveryStatus,
+);
+
 export default router;

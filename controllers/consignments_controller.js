@@ -97,4 +97,96 @@ export default class ConsignmentController {
       next(err);
     }
   }
+  static async updateExpenses(req, res, next) {
+    const id = req.params.id;
+    if (!id) {
+      return res.status(400).json({
+        message: "id is a required parameter",
+      });
+    }
+    const { action, amount } = req.body;
+    if (!action || !amount) {
+      return res.status(400).json({
+        message: "Action and amount are required parameters",
+      });
+    }
+    if (isNaN(amount) || !Number.isInteger(amount)) {
+      return res.status(400).json({
+        message: "Amount should be a number",
+      });
+    }
+    if (action !== "Add" && action !== "Subtract") {
+      return res.status(400).json({
+        message: "Action should be either Add or Subtract",
+      });
+    }
+    try {
+      const consignment = await Consignment.findById(id)
+        .populate({
+          path: "ledger",
+          populate: { path: "profitAndLoss" },
+        })
+        .exec();
+      if (!consignment) {
+        return res.status(404).json({ message: "Consignment not found" });
+      }
+      let expenses = consignment.ledger.profitAndLoss.expenses;
+      if (action === "Add") {
+        expenses += amount;
+      } else if (action === "Subtract") {
+        expenses -= amount;
+      }
+      if (expenses < 0) {
+        return res.status(400).json({
+          message: "Expenses cannot be negative",
+        });
+      }
+      consignment.ledger.profitAndLoss.expenses = expenses;
+      consignment.ledger.profitAndLoss.profit =
+        consignment.ledger.totalFreight -
+        consignment.ledger.profitAndLoss.freightOffered -
+        expenses;
+      await consignment.ledger.profitAndLoss.save();
+      return res.status(200).json({
+        message: "Expenses updated successfully",
+        consignment,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async updateDeliveryStatus(req, res, next) {
+    try {
+      const id = req.params.id;
+      if (!id) {
+        return res.status(400).json({
+          message: "id is a required parameter",
+        });
+      }
+      const { deliveryStatus } = req.body;
+      if (!deliveryStatus) {
+        return res.status(400).json({
+          message: "deliveryStatus is a required parameter",
+        });
+      }
+      const consignment = await Consignment.findById(id)
+        .populate({
+          path: "ledger",
+          populate: { path: "profitAndLoss" },
+        })
+        .exec();
+      if (!consignment) {
+        return res.status(404).json({ message: "Consignment not found" });
+      }
+      consignment.deliveryStatus = deliveryStatus;
+      await consignment.save();
+      return res.status(200).json({
+        message: "Delivery Status updated successfully",
+        consignment,
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
 }
